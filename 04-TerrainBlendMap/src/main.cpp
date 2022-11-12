@@ -82,11 +82,15 @@ Model modelDartLegoRightLeg;
 // Model animate instance
 // Mayow
 Model mayowModelAnimate;
+//lobo
+Model loboModelAnimate;
+//capoeira
+Model capoeiraModelAnimate;
 // Terrain model instance
-Terrain terrain(-1, -1, 200, 8, "../Textures/heightmap.png");
+Terrain terrain(-1, -1, 100, 50, "../Textures/heightmaproberto.png");
 
 GLuint textureCespedID, textureWallID, textureWindowID, textureHighwayID, textureLandingPadID;
-GLuint textureTerrainBackgroundID; //, textureTerrainRID, textureTerrainGID, textureTerrainBID, textureTerrainBlendMapID;
+GLuint textureTerrainBackgroundID, textureTerrainRID, textureTerrainGID, textureTerrainBID, textureTerrainBlendMapID;
 GLuint skyboxTextureID;
 
 GLenum types[6] = {
@@ -115,6 +119,8 @@ glm::mat4 modelMatrixLambo = glm::mat4(1.0);
 glm::mat4 modelMatrixAircraft = glm::mat4(1.0);
 glm::mat4 modelMatrixDart = glm::mat4(1.0f);
 glm::mat4 modelMatrixMayow = glm::mat4(1.0f);
+glm::mat4 modelMatrixLobo = glm::mat4(1.0f);
+glm::mat4 modelMatrixCapoeira = glm::mat4(1.0f);
 
 float rotDartHead = 0.0, rotDartLeftArm = 0.0, rotDartLeftHand = 0.0, rotDartRightArm = 0.0, rotDartRightHand = 0.0, rotDartLeftLeg = 0.0, rotDartRightLeg = 0.0;
 int modelSelected = 0;
@@ -278,6 +284,13 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	//Mayow
 	mayowModelAnimate.loadModel("../models/mayow/personaje2.fbx");
 	mayowModelAnimate.setShader(&shaderMulLighting);
+
+	//Lobo
+	loboModelAnimate.loadModel("../models/lobo/lobo.fbx");
+	loboModelAnimate.setShader(&shaderMulLighting);
+	//Capoeira
+	capoeiraModelAnimate.loadModel("../models/capoeira/d.fbx");
+	capoeiraModelAnimate.setShader(&shaderMulLighting);
 
 	camera->setPosition(glm::vec3(0.0, 3.0, 4.0));
 
@@ -471,7 +484,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	textureLandingPad.freeImage(bitmap);
 
 	// Definiendo la textura a utilizar
-	Texture textureTerrainBackground("../Textures/grassy2.png");
+	Texture textureTerrainBackground("../Textures/terreno.jpg");
 	// Carga el mapa de bits (FIBITMAP es el tipo de dato de la libreria)
 	bitmap = textureTerrainBackground.loadImage();
 	// Convertimos el mapa de bits en un arreglo unidimensional de tipo unsigned char
@@ -502,8 +515,8 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	// Libera la memoria de la textura
 	textureTerrainBackground.freeImage(bitmap);
 
-	/*// Definiendo la textura a utilizar
-	Texture textureTerrainR("../Textures/mud.png");
+	// Definiendo la textura a utilizar
+	Texture textureTerrainR("../Textures/tierra.jpg");
 	// Carga el mapa de bits (FIBITMAP es el tipo de dato de la libreria)
 	bitmap = textureTerrainR.loadImage();
 	// Convertimos el mapa de bits en un arreglo unidimensional de tipo unsigned char
@@ -532,10 +545,10 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	} else
 		std::cout << "Failed to load texture" << std::endl;
 	// Libera la memoria de la textura
-	textureTerrainR.freeImage(bitmap);*/
+	textureTerrainR.freeImage(bitmap);
 
-	/*// Definiendo la textura a utilizar
-	Texture textureTerrainG("../Textures/grassFlowers.png");
+	// Definiendo la textura a utilizar
+	Texture textureTerrainG("../Textures/flores.jpg");
 	// Carga el mapa de bits (FIBITMAP es el tipo de dato de la libreria)
 	bitmap = textureTerrainG.loadImage();
 	// Convertimos el mapa de bits en un arreglo unidimensional de tipo unsigned char
@@ -564,10 +577,10 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	} else
 		std::cout << "Failed to load texture" << std::endl;
 	// Libera la memoria de la textura
-	textureTerrainG.freeImage(bitmap);*/
+	textureTerrainG.freeImage(bitmap);
 
-	/*// Definiendo la textura a utilizar
-	Texture textureTerrainB("../Textures/path.png");
+	// Definiendo la textura a utilizar
+	Texture textureTerrainB("../Textures/camino.jpg");
 	// Carga el mapa de bits (FIBITMAP es el tipo de dato de la libreria)
 	bitmap = textureTerrainB.loadImage();
 	// Convertimos el mapa de bits en un arreglo unidimensional de tipo unsigned char
@@ -596,12 +609,12 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	} else
 		std::cout << "Failed to load texture" << std::endl;
 	// Libera la memoria de la textura
-	textureTerrainB.freeImage(bitmap);*/
+	textureTerrainB.freeImage(bitmap);
 
-	/*// Definiendo la textura a utilizar
-	Texture textureTerrainBlendMap("../Textures/blendMap.png");
+	// Definiendo la textura a utilizar
+	Texture textureTerrainBlendMap("../Textures/blendMapRoberto.png");
 	// Carga el mapa de bits (FIBITMAP es el tipo de dato de la libreria)
-	bitmap = textureTerrainBlendMap.loadImage();
+	bitmap = textureTerrainBlendMap.loadImage(true);
 	// Convertimos el mapa de bits en un arreglo unidimensional de tipo unsigned char
 	data = textureTerrainBlendMap.convertToData(bitmap, imageWidth,
 			imageHeight);
@@ -628,7 +641,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	} else
 		std::cout << "Failed to load texture" << std::endl;
 	// Libera la memoria de la textura
-	textureTerrainBlendMap.freeImage(bitmap);*/
+	textureTerrainBlendMap.freeImage(bitmap);
 }
 
 void destroy() {
@@ -682,10 +695,10 @@ void destroy() {
 	glDeleteTextures(1, &textureHighwayID);
 	glDeleteTextures(1, &textureLandingPadID);
 	glDeleteTextures(1, &textureTerrainBackgroundID);
-	/*glDeleteTextures(1, &textureTerrainRID);
+	glDeleteTextures(1, &textureTerrainRID);
 	glDeleteTextures(1, &textureTerrainGID);
 	glDeleteTextures(1, &textureTerrainBID);
-	glDeleteTextures(1, &textureTerrainBlendMapID);*/
+	glDeleteTextures(1, &textureTerrainBlendMapID);
 
 	// Cube Maps Delete
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
@@ -755,7 +768,7 @@ bool processInput(bool continueApplication) {
 	if (enableCountSelected && glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS){
 		enableCountSelected = false;
 		modelSelected++;
-		if(modelSelected > 2)
+		if(modelSelected > 3)
 			modelSelected = 0;
 		if(modelSelected == 1)
 			fileName = "../animaciones/animation_dart_joints.txt";
@@ -840,6 +853,24 @@ bool processInput(bool continueApplication) {
 		modelMatrixDart = glm::translate(modelMatrixDart, glm::vec3(-0.02, 0.0, 0.0));
 	else if (modelSelected == 2 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
 		modelMatrixDart = glm::translate(modelMatrixDart, glm::vec3(0.02, 0.0, 0.0));
+	
+	//lobo
+	if (modelSelected == 3 && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+		modelMatrixLobo = glm::rotate(modelMatrixLobo, 0.02f, glm::vec3(0, 1, 0));
+		loboModelAnimate.setAnimationIndex(0);
+	}
+	else if (modelSelected == 3 && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+		modelMatrixLobo = glm::rotate(modelMatrixLobo, -0.02f, glm::vec3(0, 1, 0));
+		loboModelAnimate.setAnimationIndex(0);
+	}
+	if (modelSelected == 3 && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+		modelMatrixLobo = glm::translate(modelMatrixLobo, glm::vec3(0.0, 0.0, 0.02));
+		loboModelAnimate.setAnimationIndex(0);
+	}
+	else if (modelSelected == 3 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+		modelMatrixLobo = glm::translate(modelMatrixLobo, glm::vec3(0.0, 0.0, -0.02));
+		loboModelAnimate.setAnimationIndex(0);
+	}
 
 	glfwPollEvents();
 	return continueApplication;
@@ -860,6 +891,12 @@ void applicationLoop() {
 
 	modelMatrixMayow = glm::translate(modelMatrixMayow, glm::vec3(13.0f, 0.05f, -5.0f));
 	modelMatrixMayow = glm::rotate(modelMatrixMayow, glm::radians(-90.0f), glm::vec3(0, 1, 0));
+	
+	modelMatrixLobo = glm::translate(modelMatrixLobo, glm::vec3(16.0f, 0.05f, -5.0f));
+	modelMatrixLobo = glm::rotate(modelMatrixLobo, glm::radians(-90.0f), glm::vec3(0, 1, 0));
+
+	modelMatrixCapoeira = glm::translate(modelMatrixCapoeira, glm::vec3(10.0f, 0.05f, -5.0f));
+	modelMatrixCapoeira = glm::rotate(modelMatrixCapoeira, glm::radians(-90.0f), glm::vec3(0, 1, 0));
 
 	// Variables to interpolation key frames
 	fileName = "../animaciones/animation_dart_joints.txt";
@@ -948,7 +985,20 @@ void applicationLoop() {
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureTerrainBackgroundID);
 		shaderTerrain.setInt("backgroundTexture", 0);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, textureTerrainBID);
+		shaderTerrain.setInt("textureB", 2);
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, textureTerrainRID);
+		shaderTerrain.setInt("textureR", 3);
+		glActiveTexture(GL_TEXTURE4);
+		glBindTexture(GL_TEXTURE_2D, textureTerrainGID);
+		shaderTerrain.setInt("textureG", 4);
+		glActiveTexture(GL_TEXTURE5);
+		glBindTexture(GL_TEXTURE_2D, textureTerrainBlendMapID);
+		shaderTerrain.setInt("textureBlendMap", 5);
 		shaderTerrain.setVectorFloat2("scaleUV", glm::value_ptr(glm::vec2(40, 40)));
+		terrain.setPosition(glm::vec3(50, 0, 50));
 		terrain.render();
 		shaderTerrain.setVectorFloat2("scaleUV", glm::value_ptr(glm::vec2(0, 0)));
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -1057,6 +1107,29 @@ void applicationLoop() {
 		mayowModelAnimate.setAnimationIndex(0);
 		mayowModelAnimate.render(modelMatrixMayowBody);
 
+		//LOBO
+		glm::vec3 ejeyLobo = glm::normalize(terrain.getNormalTerrain(modelMatrixLobo[3][0],
+			modelMatrixLobo[3][2]));
+		glm::vec3 ejexLobo = glm::normalize(glm::vec3(modelMatrixLobo[0]));
+		glm::vec3 ejezLobo = glm::normalize(glm::cross(ejexLobo, ejeyLobo)); //es perpendicular a Y
+		ejexLobo = glm::normalize(glm::cross(ejeyLobo, ejezLobo));
+
+		modelMatrixLobo[0] = glm::vec4(ejexLobo, 0.0f);
+		modelMatrixLobo[1] = glm::vec4(ejeyLobo, 0.0f);
+		modelMatrixLobo[2] = glm::vec4(ejezLobo, 0.0f);
+
+		modelMatrixLobo[3][1] = terrain.getHeightTerrain(modelMatrixLobo[3][0], modelMatrixLobo[3][2]); //para que el modelo se ajuste a la altura
+		glm::mat4 modelMatrixLoboBody = glm::mat4(modelMatrixLobo);
+		modelMatrixLoboBody = glm::scale(modelMatrixLoboBody, glm::vec3(0.0011, 0.0011, 0.0011));
+		loboModelAnimate.render(modelMatrixLoboBody);
+		loboModelAnimate.setAnimationIndex(1);
+
+		//Capoeira
+		modelMatrixCapoeira[3][1] = terrain.getHeightTerrain(modelMatrixCapoeira[3][0], modelMatrixCapoeira[3][2]);
+		glm::mat4 modelMatrixCapoeiraBody = glm::mat4(modelMatrixCapoeira);
+		modelMatrixCapoeiraBody = glm::scale(modelMatrixCapoeiraBody, glm::vec3(0.01f, 0.01f, 0.01f));
+		capoeiraModelAnimate.render(modelMatrixCapoeiraBody);
+		capoeiraModelAnimate.setAnimationIndex(0);
 		/*******************************************
 		 * Skybox
 		 *******************************************/
