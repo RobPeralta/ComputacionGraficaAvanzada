@@ -1335,7 +1335,7 @@ void applicationLoop() {
 		// State machine for the lambo car
 		switch(stateDoor){
 		case 0:
-			dorRotCount += 0.5;+
+			dorRotCount += 0.5;
 			if(dorRotCount > 75)
 				stateDoor = 1;
 			break;
