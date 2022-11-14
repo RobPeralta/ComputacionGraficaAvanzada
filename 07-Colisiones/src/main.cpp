@@ -810,6 +810,32 @@ bool processInput(bool continueApplication) {
 		std::cout << "Axes[4]=>" << axes[4] << std::endl;
 		std::cout << "Axes[5]=>" << axes[5] << std::endl;
 
+		if (fabs(axes[1]) > 0.2f) {
+			modelMatrixMayow = glm::translate(modelMatrixMayow, glm::vec3(0, 0, axes[1]*0.05));
+			animationIndex = 0;
+		}
+		if (fabs(axes[0]) > 0.2f) {
+			modelMatrixMayow = glm::rotate(modelMatrixMayow, glm::radians(-axes[0]), glm::vec3(0, 1, 0));
+			animationIndex = 0;
+		}
+		if (fabs(axes[2]) > 0.2f) {
+			camera->mouseMoveCamera(axes[2],0, deltaTime);
+		}
+		if (fabs(axes[3]) > 0.2f) {
+			camera->mouseMoveCamera(0.0, -axes[3] * 0.7, deltaTime);
+		}
+
+		const unsigned char* botones = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &numeroBotones);
+		std::cout << "Numero de botones :=>" << numeroBotones;
+
+		if (botones[1] == GLFW_PRESS) {
+			std::cout << "Numero de botones :=>" << numeroBotones;
+		}
+		if (!isJump && botones[0] == GLFW_PRESS) {
+			isJump = true;
+			startTimeJump = currTime;
+			tmv = 0;
+		}
 	}
 
 	if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
@@ -1330,6 +1356,39 @@ void applicationLoop() {
 		aircraftCollider.c = glm::vec3(modelMatrixColliderAircraft[3]);
 		aircraftCollider.e = modelAircraft.getObb().e * glm::vec3(1.0, 1.0, 1.0);
 		addOrUpdateColliders(collidersOBB, "aircraft", aircraftCollider, modelMatrixAircraft);
+
+		//collider de la rock
+		glm::mat4 modelMatrixColliderRock = glm::mat4(matrixModelRock);
+		AbstractModel::SBB rockCollider;
+		modelMatrixColliderRock = glm::scale(modelMatrixColliderRock, glm::vec3(1.0, 1.0, 1.0));
+		modelMatrixColliderRock = glm::translate(modelMatrixColliderRock, modelRock.getSbb().c);
+		rockCollider.c = glm::vec3(modelMatrixColliderRock[3]);
+		rockCollider.ratio = modelRock.getSbb().ratio * 1.0;
+		addOrUpdateColliders(collidersSBB, "rock", rockCollider, matrixModelRock);
+
+		//collider del lambo
+		AbstractModel::OBB lamboCollider;
+		glm::mat4 modelMatrixColliderLambo = glm::mat4(modelMatrixLambo);
+		modelMatrixColliderLambo[3][1] = terrain.getHeightTerrain(modelMatrixColliderLambo[3][0], modelMatrixColliderLambo[3][2]);
+		lamboCollider.u = glm::quat_cast(modelMatrixColliderLambo);
+		modelMatrixColliderLambo = glm::scale(modelMatrixColliderLambo, glm::vec3(1.3, 1.3, 1.3));
+		modelMatrixColliderLambo = glm::translate(modelMatrixColliderLambo, modelLambo.getObb().c);
+		lamboCollider.c = glm::vec3(modelMatrixColliderLambo[3]);
+		lamboCollider.e = modelLambo.getObb().e * 1.3f;
+		addOrUpdateColliders(collidersOBB, "lambo", lamboCollider, modelMatrixLambo);
+
+		//Mayow collider
+		AbstractModel::OBB mayowCollider;
+		glm::mat4 modelMatrixMayowCollider = glm::mat4(modelMatrixMayow);
+		modelMatrixMayowCollider = glm::rotate(modelMatrixMayowCollider, glm::radians(- 90.0f),
+			glm::vec3(1.0, 0.0, 0.0));
+		mayowCollider.u = glm::quat_cast(modelMatrixMayowCollider);
+		modelMatrixMayowCollider = glm::scale(modelMatrixMayowCollider, glm::vec3(0.021, 0.021, 0.021));
+		modelMatrixMayowCollider = glm::translate(modelMatrixMayowCollider, mayowModelAnimate.getObb().c);
+		mayowCollider.c = glm::vec3(modelMatrixMayowCollider[3]);
+		mayowCollider.e = mayowModelAnimate.getObb().e * 0.021f * 0.75f;
+		addOrUpdateColliders(collidersOBB, "mayow", mayowCollider, modelMatrixMayow);
+
 
 		// Lamps1 colliders
 		for (int i = 0; i < lamp1Position.size(); i++){

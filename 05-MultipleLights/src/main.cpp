@@ -149,7 +149,7 @@ int numPasosDart = 0;
 float rotHelHelY = 0.0;
 
 // Var animate lambo dor
-int stateDoor = 0;
+//int stateDoor = 0;
 float dorRotCount = 0.0;
 
 // Lamps positions
@@ -161,6 +161,19 @@ std::vector<glm::vec3> lamp2Position = { glm::vec3(-36.52, 0, -23.24),
 std::vector<float> lamp2Orientation = {21.37 + 90, -65.0 + 90,19.98 + 180, 24.23 + 90, 41.99 + 270 };
 std::vector<glm::vec3> lamp3Position = { glm::vec3(13.71f, 0.0f, 47.07f) };
 std::vector<float> lamp3Orientation = { 41.99 + 270 };
+
+// Var animate lambo dor
+int stateLambo = 0;
+int stateAvanceLambo = 0;
+int stateDoor = 1;
+float dorRotCountLambo = 0.0;
+float rotCountLambo = 0.0f;
+float rotWheelsYLambo = 0.0f;
+float rotWheelsXLambo = 0.0f;
+float maxAdvanceLambo = 0.0f;
+float avanceCountLambo = 0.0f;
+float alfaRot = 0.0f;
+glm::vec3 dirLambo = glm::vec3(-5.0f, -0.5f, 0.0f);
 
 double deltaTime;
 double currTime, lastTime;
@@ -985,6 +998,31 @@ void applicationLoop() {
 		shaderTerrain.setFloat("spotLights[0].cutOff", cos(glm::radians(12.5f)));
 		shaderTerrain.setFloat("spotLights[0].outerCutOff", cos(glm::radians(15.0f)));
 
+		shaderMulLighting.setInt("spotLightCount", 2);
+		spotPosition = glm::vec3(modelMatrixLambo[3]);
+		shaderMulLighting.setVectorFloat3("spotLights[1].light.ambient", glm::value_ptr(glm::vec3(0.2, 0.16, 0.1)));
+		shaderMulLighting.setVectorFloat3("spotLights[1].light.diffuse", glm::value_ptr(glm::vec3(0.4, 0.32, 0.2)));
+		shaderMulLighting.setVectorFloat3("spotLights[1].light.specular", glm::value_ptr(glm::vec3(0.6, 0.58, 0.03)));
+		shaderMulLighting.setVectorFloat3("spotLights[1].position", glm::value_ptr(spotPosition));
+		shaderMulLighting.setVectorFloat3("spotLights[1].direction", glm::value_ptr(dirLambo));
+		shaderMulLighting.setFloat("spotLights[1].constant", 1.0);
+		shaderMulLighting.setFloat("spotLights[1].linear", 0.02);
+		shaderMulLighting.setFloat("spotLights[1].quadratic", 0.01);
+		shaderMulLighting.setFloat("spotLights[1].cutOff", cos(glm::radians(12.5f)));
+		shaderMulLighting.setFloat("spotLights[1].outerCutOff", cos(glm::radians(15.0f)));
+
+		shaderTerrain.setInt("spotLightCount", 2);
+		shaderTerrain.setVectorFloat3("spotLights[1].light.ambient", glm::value_ptr(glm::vec3(0.2, 0.16, 0.1)));
+		shaderTerrain.setVectorFloat3("spotLights[1].light.diffuse", glm::value_ptr(glm::vec3(0.4, 0.32, 0.2)));
+		shaderTerrain.setVectorFloat3("spotLights[1].light.specular", glm::value_ptr(glm::vec3(0.6, 0.58, 0.03)));
+		shaderTerrain.setVectorFloat3("spotLights[1].position", glm::value_ptr(spotPosition));
+		shaderTerrain.setVectorFloat3("spotLights[1].direction", glm::value_ptr(dirLambo));
+		shaderTerrain.setFloat("spotLights[1].constant", 1.0);
+		shaderTerrain.setFloat("spotLights[1].linear", 0.02);
+		shaderTerrain.setFloat("spotLights[1].quadratic", 0.01);
+		shaderTerrain.setFloat("spotLights[1].cutOff", cos(glm::radians(12.5f)));
+		shaderTerrain.setFloat("spotLights[1].outerCutOff", cos(glm::radians(15.0f)));
+
 		/*******************************************
 		 * Propiedades PointLights
 		 *******************************************/
@@ -1333,19 +1371,106 @@ void applicationLoop() {
 		 *******************************************/
 
 		// State machine for the lambo car
-		switch(stateDoor){
-		case 0:
-			dorRotCount += 0.5;
-			if(dorRotCount > 75)
-				stateDoor = 1;
-			break;
-		case 1:
-			dorRotCount -= 0.5;
-			if(dorRotCount < 0){
-				dorRotCount = 0.0;
-				stateDoor = 0;
-			}
-			break;
+		 //Lambo
+		switch (stateLambo) {
+
+				//Caso de selección
+			case 0:
+
+				if (stateAvanceLambo == 0)
+					maxAdvanceLambo = 10.0f;
+				else if (stateAvanceLambo == 1) {
+					maxAdvanceLambo = 47.0f;
+				}
+				else if (stateAvanceLambo == 2) {
+					maxAdvanceLambo = 42.5f;
+				}
+				else if (stateAvanceLambo == 3) {
+					maxAdvanceLambo = 47.0f;
+				}
+				else if (stateAvanceLambo == 4) {
+					maxAdvanceLambo = 42.5f;
+				}
+
+				stateLambo = 1;
+
+				break;
+
+				//Caso de movimiento
+			case 1:
+
+				rotWheelsYLambo = 0.00f;
+				rotWheelsXLambo += 10.0f;
+
+				modelMatrixLambo = glm::translate(modelMatrixLambo, glm::vec3(0.0f, 0.0f, 0.10f));
+				avanceCountLambo += 0.10f;
+
+				if (avanceCountLambo > maxAdvanceLambo) {
+					avanceCountLambo = 0;
+					stateAvanceLambo += 1;
+					stateLambo = 2;
+				}
+
+				break;
+
+				//Coche gira
+			case 2:
+
+				modelMatrixLambo = glm::translate(modelMatrixLambo, glm::vec3(0.0f, 0.0f, 0.025f));
+				modelMatrixLambo = glm::rotate(modelMatrixLambo, glm::radians(-0.5f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+				dirLambo = glm::vec3(5.0f * sin(glm::radians(alfaRot)), -0.5f, 5.0f * cos(glm::radians(alfaRot)));
+
+				if (rotWheelsYLambo < 5.0f) {//en grados
+					rotWheelsYLambo += 0.1f;
+				}
+
+				alfaRot -= 0.5f;
+
+				rotWheelsXLambo += 5.0f;
+
+				rotCountLambo += 0.5f;
+				if (rotCountLambo >= 90) {
+					rotCountLambo = 0;
+					stateLambo = 0;
+
+					rotWheelsYLambo = 0.0f;
+					rotWheelsXLambo += 10.0f;
+
+					if (stateAvanceLambo > 4) {
+						stateAvanceLambo = 1;
+						stateLambo = 3;
+						alfaRot = 0.0f;
+					}
+				}
+
+				break;
+
+				//Puerta abre
+			case 3:
+				//std::printf("Abriendo");
+				dorRotCountLambo += 0.5f;
+
+				if (dorRotCountLambo > 75.0f) {
+					stateLambo = 4;
+				}
+
+				break;
+
+				//Puerta cierra
+			case 4:
+				//std::printf("Cerrando\n");
+				dorRotCountLambo -= 0.5f;
+
+				if (dorRotCountLambo < 0.0f) {
+					dorRotCountLambo = 0.0f;
+					stateLambo = 0;
+				}
+
+				break;
+
+			default:
+				break;
 		}
 
 		glfwSwapBuffers(window);
