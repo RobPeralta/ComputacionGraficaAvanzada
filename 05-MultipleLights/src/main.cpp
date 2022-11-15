@@ -1398,7 +1398,7 @@ void applicationLoop() {
 
 				//Caso de movimiento
 			case 1:
-
+	
 				rotWheelsYLambo = 0.00f;
 				rotWheelsXLambo += 10.0f;
 

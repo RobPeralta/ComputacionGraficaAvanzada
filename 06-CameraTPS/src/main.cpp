@@ -44,6 +44,8 @@
 int screenWidth;
 int screenHeight;
 
+int tipoCamara = 0;
+
 GLFWwindow *window;
 
 Shader shader;
@@ -54,7 +56,8 @@ Shader shaderMulLighting;
 //Shader para el terreno
 Shader shaderTerrain;
 
-std::shared_ptr<Camera> camera(new ThirdPersonCamera());
+std::shared_ptr<FirstPersonCamera> cameraPrimeraPersona(new FirstPersonCamera());
+std::shared_ptr<ThirdPersonCamera> cameraTerceraPersona(new ThirdPersonCamera());
 float distanceFromPlayer = 7.0;
 
 Sphere skyboxSphere(20, 20);
@@ -88,6 +91,8 @@ Model modelLampPost2;
 // Model animate instance
 // Mayow
 Model mayowModelAnimate;
+//lobo
+Model loboModelAnimate;
 // Terrain model instance
 Terrain terrain(-1, -1, 200, 8, "../Textures/heightmap.png");
 
@@ -121,6 +126,7 @@ glm::mat4 modelMatrixLambo = glm::mat4(1.0);
 glm::mat4 modelMatrixAircraft = glm::mat4(1.0);
 glm::mat4 modelMatrixDart = glm::mat4(1.0f);
 glm::mat4 modelMatrixMayow = glm::mat4(1.0f);
+glm::mat4 modelMatrixLobo = glm::mat4(1.0f);
 
 float rotDartHead = 0.0, rotDartLeftArm = 0.0, rotDartLeftHand = 0.0, rotDartRightArm = 0.0, rotDartRightHand = 0.0, rotDartLeftLeg = 0.0, rotDartRightLeg = 0.0;
 int modelSelected = 2;
@@ -303,10 +309,15 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	mayowModelAnimate.loadModel("../models/mayow/personaje2.fbx");
 	mayowModelAnimate.setShader(&shaderMulLighting);
 
+	//Lobo
+	loboModelAnimate.loadModel("../models/lobo/lobo.fbx");
+	loboModelAnimate.setShader(&shaderMulLighting);
+
+
 	//No tiene sentido configurar una posicion para camara en tercera persona
-	camera->setPosition(glm::vec3(0.0, 0.0, 10.0));
-	camera->setDistanceFromTarget(distanceFromPlayer);
-	camera->setSensitivity(1);
+	cameraPrimeraPersona->setPosition(glm::vec3(0.0, 0.0, 10.0));
+	cameraTerceraPersona->setDistanceFromTarget(distanceFromPlayer);
+	cameraTerceraPersona->setSensitivity(1);
 
 	// Definimos el tamanio de la imagen
 	int imageWidth, imageHeight;
@@ -765,7 +776,7 @@ void mouseButtonCallback(GLFWwindow *window, int button, int state, int mod) {
 
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
 	distanceFromPlayer -= yoffset;
-	camera->setDistanceFromTarget(distanceFromPlayer);
+	cameraTerceraPersona->setDistanceFromTarget(distanceFromPlayer);
 }
 
 bool processInput(bool continueApplication) {
@@ -773,11 +784,44 @@ bool processInput(bool continueApplication) {
 		return false;
 	}
 
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT))
-		camera->mouseMoveCamera(offsetX, 0, deltaTime);
-
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
-		camera->mouseMoveCamera(0, offsetY, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS &&
+		glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
+	{
+		tipoCamara++;
+		if (tipoCamara > 1)
+		{
+			tipoCamara = 0;
+		}
+		std::cout << "Camera Selected:" << tipoCamara << std::endl;
+	}
+	
+	if (tipoCamara == 0)
+	{
+		/* Se selecciona la camara en primera persona */
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+			cameraPrimeraPersona->moveFrontCamera(true, deltaTime);
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+			cameraPrimeraPersona->moveFrontCamera(false, deltaTime);
+		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+			cameraPrimeraPersona->moveRightCamera(false, deltaTime);
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+			cameraPrimeraPersona->moveRightCamera(true, deltaTime);
+		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+			cameraPrimeraPersona->mouseMoveCamera(offsetX, offsetY, deltaTime);
+	}
+	else if (tipoCamara == 1)
+	{
+		/* Se selecciona la camara en tercera persona */
+		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+		{
+			cameraTerceraPersona->mouseMoveCamera(offsetX, 0.0, deltaTime);
+		}
+		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+		{
+			cameraTerceraPersona->mouseMoveCamera(0.0, offsetY, deltaTime);
+		}
+	}
+	
 
 	offsetX = 0;
 	offsetY = 0;
@@ -786,7 +830,7 @@ bool processInput(bool continueApplication) {
 	if (enableCountSelected && glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS){
 		enableCountSelected = false;
 		modelSelected++;
-		if(modelSelected > 3)
+		if(modelSelected > 4)
 			modelSelected = 0;
 		if(modelSelected == 1)
 			fileName = "../animaciones/animation_dart_joints.txt";
@@ -883,6 +927,24 @@ bool processInput(bool continueApplication) {
 		modelMatrixMayow = glm::translate(modelMatrixMayow, glm::vec3(0, 0, -0.02));
 	}
 
+	//lobo
+	if (modelSelected == 4 && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+		modelMatrixLobo = glm::rotate(modelMatrixLobo, 0.02f, glm::vec3(0, 1, 0));
+		loboModelAnimate.setAnimationIndex(0);
+	}
+	else if (modelSelected == 4 && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+		modelMatrixLobo = glm::rotate(modelMatrixLobo, -0.02f, glm::vec3(0, 1, 0));
+		loboModelAnimate.setAnimationIndex(0);
+	}
+	if (modelSelected == 4 && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+		modelMatrixLobo = glm::translate(modelMatrixLobo, glm::vec3(0.0, 0.0, 0.02));
+		loboModelAnimate.setAnimationIndex(0);
+	}
+	else if (modelSelected == 4 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+		modelMatrixLobo = glm::translate(modelMatrixLobo, glm::vec3(0.0, 0.0, -0.02));
+		loboModelAnimate.setAnimationIndex(0);
+	}
+
 	glfwPollEvents();
 	return continueApplication;
 }
@@ -907,6 +969,9 @@ void applicationLoop() {
 
 	modelMatrixMayow = glm::translate(modelMatrixMayow, glm::vec3(13.0f, 0.05f, -5.0f));
 	modelMatrixMayow = glm::rotate(modelMatrixMayow, glm::radians(-90.0f), glm::vec3(0, 1, 0));
+
+	modelMatrixLobo = glm::translate(modelMatrixLobo, glm::vec3(16.0f, 0.05f, -5.0f));
+	modelMatrixLobo = glm::rotate(modelMatrixLobo, glm::radians(-90.0f), glm::vec3(0, 1, 0));
 
 	// Variables to interpolation key frames
 	fileName = "../animaciones/animation_dart_joints.txt";
@@ -939,20 +1004,35 @@ void applicationLoop() {
 			angleTarget = glm::angle(glm::quat_cast(modelMatrixDart));
 			target = glm::vec3(modelMatrixDart[3]);
 		}
-		else {
+		else if (modelSelected == 3) {
 			axisTarget = glm::axis(glm::quat_cast(modelMatrixMayow));
 			angleTarget = glm::angle(glm::quat_cast(modelMatrixMayow));
 			target = glm::vec3(modelMatrixMayow[3]);
 		}
+		else {
+			axisTarget = glm::axis(glm::quat_cast(modelMatrixLobo));
+			angleTarget = glm::angle(glm::quat_cast(modelMatrixLobo));
+			target = glm::vec3(modelMatrixLobo[3]);
+		}
 
-		if (std::isnan(angleTarget))
-			angleTarget = 0;
-		if (axisTarget.y < 0)
-			angleTarget = -angleTarget;
-		camera->setCameraTarget(target);
-		camera->setAngleTarget(angleTarget);
-		camera->updateCamera();
-		view = camera->getViewMatrix();
+		
+		
+		if (tipoCamara == 0)
+		{
+			view = cameraPrimeraPersona->getViewMatrix();
+		}
+		else if (tipoCamara == 1)
+		{
+			if (std::isnan(angleTarget))
+				angleTarget = 0;
+			if (axisTarget.y < 0)
+				angleTarget = -angleTarget;
+			cameraTerceraPersona->setCameraTarget(target);
+			cameraTerceraPersona->setAngleTarget(angleTarget);
+			cameraTerceraPersona->updateCamera();
+
+			view = cameraTerceraPersona->getViewMatrix();
+		}
 		
 
 		// Settea la matriz de vista y projection al shader con solo color
@@ -978,7 +1058,7 @@ void applicationLoop() {
 		/*******************************************
 		 * Propiedades Luz direccional
 		 *******************************************/
-		shaderMulLighting.setVectorFloat3("viewPos", glm::value_ptr(camera->getPosition()));
+		shaderMulLighting.setVectorFloat3("viewPos", glm::value_ptr(cameraPrimeraPersona->getPosition()));
 		shaderMulLighting.setVectorFloat3("directionalLight.light.ambient", glm::value_ptr(glm::vec3(0.05, 0.05, 0.05)));
 		shaderMulLighting.setVectorFloat3("directionalLight.light.diffuse", glm::value_ptr(glm::vec3(0.3, 0.3, 0.3)));
 		shaderMulLighting.setVectorFloat3("directionalLight.light.specular", glm::value_ptr(glm::vec3(0.4, 0.4, 0.4)));
@@ -987,7 +1067,7 @@ void applicationLoop() {
 		/*******************************************
 		 * Propiedades Luz direccional Terrain
 		 *******************************************/
-		shaderTerrain.setVectorFloat3("viewPos", glm::value_ptr(camera->getPosition()));
+		shaderTerrain.setVectorFloat3("viewPos", glm::value_ptr(cameraPrimeraPersona->getPosition()));
 		shaderTerrain.setVectorFloat3("directionalLight.light.ambient", glm::value_ptr(glm::vec3(0.05, 0.05, 0.05)));
 		shaderTerrain.setVectorFloat3("directionalLight.light.diffuse", glm::value_ptr(glm::vec3(0.3, 0.3, 0.3)));
 		shaderTerrain.setVectorFloat3("directionalLight.light.specular", glm::value_ptr(glm::vec3(0.4, 0.4, 0.4)));
@@ -1216,6 +1296,23 @@ void applicationLoop() {
 		glm::mat4 modelMatrixMayowBody = glm::mat4(modelMatrixMayow);
 		modelMatrixMayowBody = glm::scale(modelMatrixMayowBody, glm::vec3(0.021, 0.021, 0.021));
 		mayowModelAnimate.render(modelMatrixMayowBody);
+
+		//LOBO
+		glm::vec3 ejeyLobo = glm::normalize(terrain.getNormalTerrain(modelMatrixLobo[3][0],
+			modelMatrixLobo[3][2]));
+		glm::vec3 ejexLobo = glm::normalize(glm::vec3(modelMatrixLobo[0]));
+		glm::vec3 ejezLobo = glm::normalize(glm::cross(ejexLobo, ejeyLobo)); //es perpendicular a Y
+		ejexLobo = glm::normalize(glm::cross(ejeyLobo, ejezLobo));
+
+		modelMatrixLobo[0] = glm::vec4(ejexLobo, 0.0f);
+		modelMatrixLobo[1] = glm::vec4(ejeyLobo, 0.0f);
+		modelMatrixLobo[2] = glm::vec4(ejezLobo, 0.0f);
+
+		modelMatrixLobo[3][1] = terrain.getHeightTerrain(modelMatrixLobo[3][0], modelMatrixLobo[3][2]); //para que el modelo se ajuste a la altura
+		glm::mat4 modelMatrixLoboBody = glm::mat4(modelMatrixLobo);
+		modelMatrixLoboBody = glm::scale(modelMatrixLoboBody, glm::vec3(0.0011, 0.0011, 0.0011));
+		loboModelAnimate.render(modelMatrixLoboBody);
+		loboModelAnimate.setAnimationIndex(1);
 
 		/*******************************************
 		 * Skybox
