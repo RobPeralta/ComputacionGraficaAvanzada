@@ -7,6 +7,8 @@ in vec2 TexCoord;
 
 layout ( location = 0 ) out vec4 FragColor;
 
+uniform vec3 colorFuego = vec3(0.0, 0.0, 0.0);
+
 void main()
 {
     FragColor = texture(ParticleTex, TexCoord);
