@@ -211,5 +211,8 @@
     <None Include="..\Shaders\multipleLights_MultiTexture.fs">
       <Filter>Archivos de recursos</Filter>
     </None>
+    <None Include="..\Shaders\texturizado.fs">
+      <Filter>Archivos de recursos</Filter>
+    </None>
   </ItemGroup>
 </Project>

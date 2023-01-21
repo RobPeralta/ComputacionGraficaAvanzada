@@ -832,6 +832,12 @@ bool processInput(bool continueApplication) {
 
 		const unsigned char* botones = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &numeroBotones);
 		std::cout << "Numero de botones :=>" << numeroBotones;
+		std::cout << "botones[0]=>" << botones[0] << std::endl;
+		std::cout << "botones[1]=>" << botones[1] << std::endl;
+		std::cout << "botones[2]=>" << botones[2] << std::endl;
+		std::cout << "botones[3]=>" << botones[3] << std::endl;
+		std::cout << "botones[4]=>" << botones[4] << std::endl;
+		std::cout << "botones[5]=>" << botones[5] << std::endl;
 
 		if (botones[1] == GLFW_PRESS) {
 			std::cout << "Numero de botones :=>" << numeroBotones;
